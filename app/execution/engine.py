@@ -1,2 +1,5 @@
 class ExecutionEngine:
-    pass
+
+    @classmethod
+    def initialize(cls):
+        print("[*] initialized Execution Engine")
