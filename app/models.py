@@ -1,7 +1,7 @@
 from enum import Enum, IntEnum
 from pymysql import Date
 
-from sqlalchemy import JSON, Column, ForeignKey, Integer, String, UniqueConstraint, Text
+from sqlalchemy import JSON, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.database import Base
