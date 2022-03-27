@@ -32,13 +32,13 @@ class QueryModule:
         pass
 
     @classmethod
-    def get_database(cls, database_name: str, api_key: str):
+    def get_database(cls, database_id: int, api_key: str):
         pass
 
     @classmethod
-    def get_functions(cls, database_name: str, api_key: str):
+    def get_functions(cls, database_id: int, api_key: str):
         pass
 
     @classmethod
-    def get_function(cls, database_name: str, function_name: str, api_key: str):
+    def get_function(cls, database_id: int, function_id: int, api_key: str):
         pass
