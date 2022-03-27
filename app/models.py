@@ -8,9 +8,10 @@ from app.database import Base
 
 
 class AuthType(IntEnum, Enum):
-    GOOGLE = 0
-    KAKAO = 1
-    NAVER = 2
+    NON_SOCIAL = 0
+    GOOGLE = 1
+    KAKAO = 2
+    NAVER = 3
 
 
 class ExecutionResultType(IntEnum, Enum):
