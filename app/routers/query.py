@@ -1,6 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm.session import Session
 
-from app.schemas import ExecuteQuerySchema
+from app.database import get_db
+from app.schemas import ExecuteQuerySchema, CreateDatabaseSchema
 from app.routers.modules.query_module import QueryModule
 
 
@@ -10,6 +12,14 @@ router = APIRouter()
 @router.get("/execute")
 async def execute_query(data: ExecuteQuerySchema):
     return QueryModule.execute_query(data)
+
+
+@router.post("/databases")
+async def create_database(
+    data: CreateDatabaseSchema,
+    db: Session = Depends(get_db),
+):
+    return QueryModule.create_database(data, db)
 
 
 @router.get("/databases")
