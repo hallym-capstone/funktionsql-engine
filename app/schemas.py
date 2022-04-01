@@ -6,3 +6,8 @@ class ExecuteQuerySchema(BaseModel):
     function_name: str
     database_name: str
     api_key: str
+
+
+class CreateDatabaseSchema(BaseModel):
+    database_name: str
+    api_key: str

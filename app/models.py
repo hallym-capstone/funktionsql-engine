@@ -1,8 +1,8 @@
 from datetime import datetime
 from enum import Enum, IntEnum
 
-from sqlalchemy import JSON, Column, ForeignKey, Integer, String, TIMESTAMP
 from sqlalchemy.orm import relationship
+from sqlalchemy import Column, ForeignKey, Integer, String, TIMESTAMP
 
 from app.database import Base
 
@@ -36,7 +36,7 @@ class Auth(Base):
     type = Column(Integer, nullable=False)
     auth_key = Column(String(256), unique=True, nullable=False)
 
-    user = relationship("Users")
+    user = relationship(User)
 
 
 class Database(Base):
@@ -47,7 +47,7 @@ class Database(Base):
     name = Column(String(64), nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, default=datetime.now())
 
-    user = relationship("Users")
+    user = relationship(User)
 
 
 class Function(Base):
@@ -60,7 +60,7 @@ class Function(Base):
     created_at = Column(TIMESTAMP, nullable=False, default=datetime.now())
     updated_at = Column(TIMESTAMP, nullable=False, default=datetime.now())
 
-    database = relationship("Databases")
+    database = relationship(Database)
 
 
 class ExecutionHistory(Base):
@@ -72,4 +72,4 @@ class ExecutionHistory(Base):
     type = Column(Integer, nullable=False)
     created_at = Column(TIMESTAMP, nullable=False, default=datetime.now())
 
-    function = relationship("Functions")
+    function = relationship(Function)
