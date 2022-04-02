@@ -4,7 +4,7 @@ from sqlalchemy.orm.session import Session
 
 from app.models import Auth
 from app.schemas import CreateDatabaseSchema, ExecuteQuerySchema
-from app.crud import create_database, get_auth_by_api_key, get_database_by_user_id_and_name, get_databases_by_user_id
+from app.crud import create_database, get_auth_by_api_key, get_database_by_id_and_user_id, get_database_by_user_id_and_name, get_databases_by_user_id
 
 
 class QueryModule:
@@ -53,8 +53,11 @@ class QueryModule:
         return get_databases_by_user_id(db, user_id)
 
     @classmethod
-    def get_database(cls, database_id: int, api_key: str):
-        pass
+    def get_database(cls, database_id: int, user_id: int, db: Session):
+        query_database = get_database_by_id_and_user_id(db, database_id, user_id)
+        if not query_database:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"database not found")
+        return query_database
 
     @classmethod
     def get_functions(cls, database_id: int, api_key: str):

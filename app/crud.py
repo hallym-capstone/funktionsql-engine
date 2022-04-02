@@ -20,6 +20,10 @@ def get_databases_by_user_id(db: Session, user_id: int):
     return db.query(Database).filter(Database.user_id == user_id).all()
 
 
+def get_database_by_id_and_user_id(db: Session, id: int, user_id: int):
+    return db.query(Database).filter(and_(Database.id == id, Database.user_id == user_id)).first()
+
+
 def create_database(db: Session, user_id: int, name: str):
     query_database = Database(user_id=user_id, name=name)
     db.add(query_database)
