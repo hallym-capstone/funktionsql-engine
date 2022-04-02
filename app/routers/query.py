@@ -1,3 +1,4 @@
+from app.routers.modules.auth_module import AuthModule
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm.session import Session
 
@@ -23,8 +24,11 @@ async def create_database(
 
 
 @router.get("/databases")
-async def get_databases(api_key: str):
-    return QueryModule.get_databases(api_key)
+async def get_databases(
+    user_id = Depends(AuthModule.validate_token),
+    db: Session = Depends(get_db),
+):
+    return QueryModule.get_databases(user_id, db)
 
 
 @router.get("/databases/{database_id}")
