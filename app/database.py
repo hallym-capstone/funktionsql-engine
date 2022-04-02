@@ -1,4 +1,5 @@
 import os
+import urllib.parse
 
 from pathlib import Path
 from dotenv import load_dotenv
@@ -12,7 +13,7 @@ load_dotenv(dotenv_path=env_path)
 
 
 DATABASE_USERNAME = os.getenv("MYSQL_USERNAME")
-DATABASE_PASSWORD = os.getenv("MYSQL_PASSWORD")
+DATABASE_PASSWORD = urllib.parse.quote_plus(os.getenv("MYSQL_PASSWORD"))
 DATABASE_HOST = os.getenv("MYSQL_HOST")
 DATABASE_PORT = os.getenv("MYSQL_PORT")
 DATABASE_NAME = os.getenv("MYSQL_DB")
