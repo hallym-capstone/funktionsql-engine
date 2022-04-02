@@ -4,7 +4,7 @@ from sqlalchemy.orm.session import Session
 
 from app.models import Auth
 from app.schemas import CreateDatabaseSchema, ExecuteQuerySchema
-from app.crud import create_database, get_auth_by_api_key, get_database_by_user_id_and_name
+from app.crud import create_database, get_auth_by_api_key, get_database_by_user_id_and_name, get_databases_by_user_id
 
 
 class QueryModule:
@@ -49,8 +49,8 @@ class QueryModule:
         return create_database(db, query_auth.user_id, data.database_name)
 
     @classmethod
-    def get_databases(cls, api_key: str):
-        pass
+    def get_databases(cls, user_id: int, db: Session):
+        return get_databases_by_user_id(db, user_id)
 
     @classmethod
     def get_database(cls, database_id: int, api_key: str):

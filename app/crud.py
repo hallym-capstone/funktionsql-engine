@@ -1,7 +1,11 @@
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
 
-from app.models import Auth, Database
+from app.models import Auth, Database, User
+
+
+def get_user_by_id(db: Session, id: int):
+    return db.query(User).filter(User.id == id).first()
 
 
 def get_auth_by_api_key(db: Session, api_key: str):
@@ -10,6 +14,10 @@ def get_auth_by_api_key(db: Session, api_key: str):
 
 def get_database_by_user_id_and_name(db: Session, user_id: int, name: str):
     return db.query(Database).filter(and_(Database.user_id == user_id, Database.name == name)).first()
+
+
+def get_databases_by_user_id(db: Session, user_id: int):
+    return db.query(Database).filter(Database.user_id == user_id).all()
 
 
 def create_database(db: Session, user_id: int, name: str):
