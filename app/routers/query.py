@@ -25,15 +25,19 @@ async def create_database(
 
 @router.get("/databases")
 async def get_databases(
-    user_id = Depends(AuthModule.validate_token),
+    user_id: int = Depends(AuthModule.validate_token),
     db: Session = Depends(get_db),
 ):
     return QueryModule.get_databases(user_id, db)
 
 
 @router.get("/databases/{database_id}")
-async def get_database(database_id: int, api_key: str):
-    return QueryModule.get_database(database_id, api_key)
+async def get_database(
+    database_id: int,
+    user_id: int = Depends(AuthModule.validate_token),
+    db: Session = Depends(get_db),
+):
+    return QueryModule.get_database(database_id, user_id, db)
 
 
 @router.get("/databases/{database_id}/functions")
