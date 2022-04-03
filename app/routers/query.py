@@ -1,16 +1,22 @@
-from app.routers.modules.auth_module import AuthModule
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm.session import Session
 
 from app.database import get_db
 from app.schemas import ExecuteQuerySchema, CreateDatabaseSchema
 from app.routers.modules.query_module import QueryModule
+from app.execution.engine import ExecutionEngine
+from app.routers.modules.auth_module import AuthModule
 
 
 router = APIRouter()
 
 
-@router.get("/execute")
+@router.post("/test")
+async def test():
+    return ExecutionEngine.construct_lambda_execution()
+
+
+@router.post("/execute")
 async def execute_query(data: ExecuteQuerySchema):
     return QueryModule.execute_query(data)
 
