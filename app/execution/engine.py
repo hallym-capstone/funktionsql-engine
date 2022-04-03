@@ -26,10 +26,6 @@ class ExecutionEngine:
         )
 
     @classmethod
-    def consume_executable_query(cls):
-        pass
-
-    @classmethod
     def create_lambda_executable(cls, lambda_key: str, file: bytes):
         if cls.iam_client is None or cls.lambda_client is None:
             return
@@ -49,15 +45,12 @@ class ExecutionEngine:
         return False
 
     @classmethod
-    def construct_lambda_execution(cls):
+    def run_lambda_executable(cls, lambda_key: str):
         if cls.lambda_client is None:
             return
         response = cls.lambda_client.invoke(
-            FunctionName="test",
+            FunctionName=lambda_key,
             InvocationType="RequestResponse",
         )
+        print(response)
         print(response["Payload"].read().decode("utf-8"))
-
-    @classmethod
-    def run_executable_query(cls):
-        pass

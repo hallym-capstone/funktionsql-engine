@@ -24,6 +24,10 @@ def get_database_by_id_and_user_id(db: Session, id: int, user_id: int):
     return db.query(Database).filter(and_(Database.id == id, Database.user_id == user_id)).first()
 
 
+def get_function_by_database_id_and_name(db: Session, database_id: int, name: str):
+    return db.query(Function).filter(and_(Function.database_id == database_id, Function.name == name)).first()
+
+
 def create_database(db: Session, user_id: int, name: str):
     query_database = Database(user_id=user_id, name=name)
     db.add(query_database)
