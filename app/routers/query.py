@@ -16,6 +16,7 @@ async def create_database(
     data: CreateDatabaseSchema,
     db: Session = Depends(get_db),
 ):
+    # TODO: validate auth
     return QueryModule.create_database(data, db)
 
 
@@ -24,6 +25,7 @@ async def get_databases(
     user_id: int = Depends(AuthModule.validate_token),
     db: Session = Depends(get_db),
 ):
+    # TODO: validate auth
     return QueryModule.get_databases(user_id, db)
 
 
@@ -33,6 +35,7 @@ async def get_database(
     user_id: int = Depends(AuthModule.validate_token),
     db: Session = Depends(get_db),
 ):
+    # TODO: validate auth
     return QueryModule.get_database(database_id, user_id, db)
 
 
@@ -42,6 +45,7 @@ async def execute_query(
     data: ExecuteQuerySchema,
     db: Session = Depends(get_db),
 ):
+    # TODO: validate auth
     return RuntimeEngine.consume_execute_request(database_id, data.function_name, data.query_selector, db)
 
 
@@ -52,14 +56,15 @@ async def create_function(
     file: bytes = File(...),
     db: Session = Depends(get_db),
 ):
+    # TODO: validate auth
     return RuntimeEngine.create_function(database_id, function_name, file, db)
 
 
 @router.get("/databases/{database_id}/functions")
-async def get_functions(database_id: int, api_key: str):
-    return QueryModule.get_functions(database_id, api_key)
+async def get_functions(database_id: int, db: Session = Depends(get_db)):
+    return QueryModule.get_functions(database_id, db)
 
 
 @router.get("/databases/{database_id}/functions/{function_id}")
-async def get_function(database_id: int, function_id: int, api_key: str):
-    return QueryModule.get_function(database_id, function_id, api_key)
+async def get_function(database_id: int, function_id: int, db: Session = Depends(get_db)):
+    return QueryModule.get_function(database_id, function_id, db)

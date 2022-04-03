@@ -60,9 +60,11 @@ class QueryModule:
         return query_database
 
     @classmethod
-    def get_functions(cls, database_id: int, api_key: str):
+    def get_functions(cls, database_id: int, db: Session):
+        # TODO: validate auth
         pass
 
     @classmethod
-    def get_function(cls, database_id: int, function_id: int, api_key: str):
+    def get_function(cls, database_id: int, function_id: int, db: Session):
+        # TODO: validate auth
         pass

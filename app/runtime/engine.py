@@ -33,7 +33,13 @@ class RuntimeEngine:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"function does not exist(database_id={database_id}, name={function_name})")
 
         if query_selector == "RUN":
-            ExecutionEngine.run_lambda_executable(query_function.lambda_key)
+            is_succeeded, result = ExecutionEngine.run_lambda_executable(query_function.lambda_key)
+            if not is_succeeded:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"lambda executable run failed({result})")
+            return {"response": result}
+        else:
+            # TODO: support other query selectors
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"unsupported query selector received({query_selector})")
 
     @classmethod
     def consume_prepared_query(cls):
