@@ -1,5 +1,4 @@
 import os
-import json
 import boto3
 
 from pathlib import Path
@@ -19,25 +18,6 @@ class ExecutionEngine:
         print("[*] initialized Execution Engine")
 
         cls.iam_client = boto3.client("iam")
-        role_policy = {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                "Sid": "",
-                "Effect": "Allow",
-                "Principal": {
-                    "Service": "lambda.amazonaws.com"
-                },
-                "Action": "sts:AssumeRole"
-                }
-            ]
-        }
-        response = cls.iam_client.create_role(
-            RoleName='LambdaBasicExecution',
-            AssumeRolePolicyDocument=json.dumps(role_policy),
-        )
-        print(response)
-
         cls.lambda_client = boto3.client(
             "lambda",
             region_name="ap-northeast-2",
@@ -50,20 +30,23 @@ class ExecutionEngine:
         pass
 
     @classmethod
-    def create_lambda_executable(cls, file: bytes):
+    def create_lambda_executable(cls, lambda_key: str, file: bytes):
         if cls.iam_client is None or cls.lambda_client is None:
             return
 
         role = cls.iam_client.get_role(RoleName="LambdaBasicExecution")
         response = cls.lambda_client.create_function(
-            FunctionName="lambda_test",
-            Runtime="python3.9",
+            FunctionName=lambda_key,
+            Runtime="python3.9",  # TODO: support other languages
             Role=role["Role"]["Arn"],
             Handler="lambda.lambda_handler",
             Code=dict(ZipFile=file),
             Timeout=300,
         )
-        print(response)
+        status = response["ResponseMetadata"]["HTTPStatusCode"]
+        if status >= 200 and status < 300:
+            return True
+        return False
 
     @classmethod
     def construct_lambda_execution(cls):
