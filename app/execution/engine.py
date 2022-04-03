@@ -1,4 +1,5 @@
 import os
+import json
 import boto3
 
 from pathlib import Path
@@ -35,7 +36,7 @@ class ExecutionEngine:
             FunctionName=lambda_key,
             Runtime="python3.9",  # TODO: support other languages
             Role=role["Role"]["Arn"],
-            Handler="lambda.lambda_handler",
+            Handler="lambda_function.lambda_handler",
             Code=dict(ZipFile=file),
             Timeout=300,
         )
@@ -48,9 +49,14 @@ class ExecutionEngine:
     def run_lambda_executable(cls, lambda_key: str):
         if cls.lambda_client is None:
             return
-        response = cls.lambda_client.invoke(
+        lambda_response = cls.lambda_client.invoke(
             FunctionName=lambda_key,
             InvocationType="RequestResponse",
         )
-        print(response)
-        print(response["Payload"].read().decode("utf-8"))
+        result = json.loads(lambda_response["Payload"].read().decode("utf-8"))
+
+        if "statusCode" in result and result["statusCode"] == 200:
+            return True, result["body"]
+        else:
+            error_message = result["errorMessage"] if "errorMessage" in result else None
+            return False, error_message
