@@ -11,11 +11,6 @@ from app.runtime.engine import RuntimeEngine
 router = APIRouter()
 
 
-@router.post("/execute")
-async def execute_query(data: ExecuteQuerySchema):
-    return QueryModule.execute_query(data)
-
-
 @router.post("/databases")
 async def create_database(
     data: CreateDatabaseSchema,
@@ -39,6 +34,15 @@ async def get_database(
     db: Session = Depends(get_db),
 ):
     return QueryModule.get_database(database_id, user_id, db)
+
+
+@router.post("/databases/{database_id}/execute")
+async def execute_query(
+    database_id: int,
+    data: ExecuteQuerySchema,
+    db: Session = Depends(get_db),
+):
+    return RuntimeEngine.consume_execute_request(database_id, data.function_name, data.query_selector, db)
 
 
 @router.post("/databases/{database_id}/functions")
