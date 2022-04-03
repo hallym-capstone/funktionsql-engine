@@ -3,27 +3,12 @@ from sqlalchemy.orm.session import Session
 
 from app.database import get_db
 from app.schemas import ExecuteQuerySchema, CreateDatabaseSchema
-from app.routers.modules.query_module import QueryModule
-from app.execution.engine import ExecutionEngine
 from app.routers.modules.auth_module import AuthModule
+from app.routers.modules.query_module import QueryModule
+from app.runtime.engine import RuntimeEngine
 
 
 router = APIRouter()
-
-
-@router.post("/files")
-async def create_file(file: bytes = File(...)):
-    return {"file_bytes": len(file)}
-
-
-@router.post("/run-test")
-async def run_test():
-    return ExecutionEngine.construct_lambda_execution()
-
-
-@router.post("/create-test")
-async def create_test(file: bytes = File(...)):
-    return ExecutionEngine.create_lambda_executable(file)
 
 
 @router.post("/execute")
@@ -54,6 +39,16 @@ async def get_database(
     db: Session = Depends(get_db),
 ):
     return QueryModule.get_database(database_id, user_id, db)
+
+
+@router.post("/databases/{database_id}/functions")
+async def create_function(
+    database_id: int,
+    function_name: str,
+    file: bytes = File(...),
+    db: Session = Depends(get_db),
+):
+    return RuntimeEngine.create_function(database_id, function_name, file, db)
 
 
 @router.get("/databases/{database_id}/functions")
