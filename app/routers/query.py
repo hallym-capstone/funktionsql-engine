@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File
 from sqlalchemy.orm.session import Session
 
 from app.database import get_db
@@ -11,9 +11,19 @@ from app.routers.modules.auth_module import AuthModule
 router = APIRouter()
 
 
-@router.post("/test")
-async def test():
+@router.post("/files")
+async def create_file(file: bytes = File(...)):
+    return {"file_bytes": len(file)}
+
+
+@router.post("/run-test")
+async def run_test():
     return ExecutionEngine.construct_lambda_execution()
+
+
+@router.post("/create-test")
+async def create_test(file: bytes = File(...)):
+    return ExecutionEngine.create_lambda_executable(file)
 
 
 @router.post("/execute")
