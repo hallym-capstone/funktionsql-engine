@@ -10,7 +10,6 @@ from app.schemas import (
 
 
 router = APIRouter()
-SECRET_KEY = 'secret_key'  # 임시
 
 
 @router.post("/login/basic")
@@ -50,4 +49,4 @@ async def refresh_token(
     data: AuthRefreshTokenSchema,
     db: Session = Depends(get_db),
 ):
-    pass
+    return AuthModule.refresh_token(data, db)

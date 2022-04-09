@@ -72,3 +72,15 @@ class AuthLoginResponse(BaseModel):
             access_token=data["access_token"],
             refresh_token=data["refresh_token"],
         )
+
+
+class AuthTokenRefreshResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+
+    @classmethod
+    def load(cls, data: dict):
+        return AuthTokenRefreshResponse(
+            access_token=data["access_token"],
+            refresh_token=data["refresh_token"],
+        )
