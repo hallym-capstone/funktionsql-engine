@@ -36,16 +36,14 @@ def get_function_by_database_id_and_name(db: Session, database_id: int, name: st
 def create_user(db: Session, username: str, hashed_password: str):
     query_user = User(username=username, password=hashed_password)
     db.add(query_user)
-    db.commit()
-    db.refresh(query_user)
+    db.flush()
     return query_user
 
 
 def create_auth(db: Session, user_id: int, type: AuthType, auth_key: Union[str, None]):
     query_auth = Auth(user_id=user_id, type=type, auth_key=auth_key)
     db.add(query_auth)
-    db.commit()
-    db.refresh(query_auth)
+    db.flush()
     return query_auth
 
 

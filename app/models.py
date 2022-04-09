@@ -24,6 +24,7 @@ class ExecutionResultType(IntEnum, Enum):
 class User(Base):
     __tablename__ = "Users"
 
+    # TODO: add email field
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(64), unique=True, nullable=False)
     password = Column(String(64), nullable=False)

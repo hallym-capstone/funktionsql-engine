@@ -42,16 +42,38 @@ class AuthModule:
 
         query_user = get_user_by_username(db, username)
         if query_user:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"username `{username}` is already taken")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"username `{username}` is already used")
 
-        inserted_user = create_user(db, username, cls.get_password_hash(password))
-        inserted_auth = create_auth(db, inserted_user.id, AuthType.BASIC.value, None)
+        try:
+            inserted_user = create_user(db, username, cls.get_password_hash(password))
+            inserted_auth = create_auth(db, inserted_user.id, AuthType.BASIC.value, None)
+            db.commit()
 
-        return AuthSignupResponse.load(inserted_user.id, username, inserted_auth.type)
+            return AuthSignupResponse.load(inserted_user.id, username, inserted_auth.type)
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"unhandled error triggered: {str(e)}")
 
     @classmethod
-    def social_signup(cls, data: AuthSocialSignupSchema):
-        pass
+    def social_signup(cls, data: AuthSocialSignupSchema, db: Session):
+        username = data.username
+        password = data.password
+        auth_key = data.auth_key
+        auth_type = data.auth_type
+
+        query_user = get_user_by_username(db, username)
+        if query_user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"username `{username}` is already used")
+
+        try:
+            inserted_user = create_user(db, username, cls.get_password_hash(password))
+            inserted_auth = create_auth(db, inserted_user.id, auth_type.value, auth_key)
+            db.commit()
+
+            return AuthSignupResponse.load(inserted_user.id, username, inserted_auth.type)
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"unhandled error triggered: {str(e)}")
 
     @classmethod
     def refresh_token(cls, data: AuthRefreshTokenSchema):
