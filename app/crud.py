@@ -1,11 +1,16 @@
+from typing import Union
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
 
-from app.models import Auth, Database, Function, User
+from app.models import Auth, AuthType, Database, Function, User
 
 
 def get_user_by_id(db: Session, id: int):
     return db.query(User).filter(User.id == id).first()
+
+
+def get_user_by_username(db: Session, username: str):
+    return db.query(User).filter(User.username == username).first()
 
 
 def get_auth_by_api_key(db: Session, api_key: str):
@@ -26,6 +31,22 @@ def get_database_by_id_and_user_id(db: Session, id: int, user_id: int):
 
 def get_function_by_database_id_and_name(db: Session, database_id: int, name: str):
     return db.query(Function).filter(and_(Function.database_id == database_id, Function.name == name)).first()
+
+
+def create_user(db: Session, username: str, hashed_password: str):
+    query_user = User(username=username, password=hashed_password)
+    db.add(query_user)
+    db.commit()
+    db.refresh(query_user)
+    return query_user
+
+
+def create_auth(db: Session, user_id: int, type: AuthType, auth_key: Union[str, None]):
+    query_auth = Auth(user_id=user_id, type=type, auth_key=auth_key)
+    db.add(query_auth)
+    db.commit()
+    db.refresh(query_auth)
+    return query_auth
 
 
 def create_database(db: Session, user_id: int, name: str):

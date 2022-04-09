@@ -8,6 +8,7 @@ from starlette.responses import JSONResponse
 
 from app.database import get_db
 from app.models import AuthType
+from app.routers.modules.auth_module import AuthModule
 from app.schemas import AuthBasicSignupSchema, AuthLoginSchema, AuthRefreshTokenSchema, AuthSocialSignupSchema
 
 
@@ -28,7 +29,7 @@ async def basic_signup(
     data: AuthBasicSignupSchema,
     db: Session = Depends(get_db),
 ):
-    pass
+    return AuthModule.basic_signup(data, db)
 
 
 @router.post("/signup/social")
@@ -65,7 +66,7 @@ async def login(auth_type: AuthType, username: str = None, password: str = None,
         else:
             if info['password'] != password:  # 비밀번호 일치여부 확인
                 return JSONResponse(status_code=400, content=dict(msg="NO MATCH USER"))
-            if auth_type != AuthType.NON_SOCIAL:  # 소셜 로그인인 경우 auth_key 확인
+            if auth_type != AuthType.BASIC:  # 소셜 로그인인 경우 auth_key 확인
                 cur.execute('SELECT auth_key FROM Auth WHERE user_id = %s', int(info['id']))
                 if token_id != cur.fetchone()['auth_key']:
                     return JSONResponse(status_code=400, content=dict(msg="NO MATCH USER3"))
