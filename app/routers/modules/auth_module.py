@@ -28,6 +28,7 @@ class AuthModule:
 
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+    # login logic for basic users
     @classmethod
     def basic_login(cls, data: AuthBasicLoginSchema, db: Session):
         username = data.username
@@ -55,6 +56,7 @@ class AuthModule:
             "refresh_token": cls.verify_exp_and_get_refresh_token(db, query_auth.refresh_token, query_user.id, query_user.username),
         })
 
+    # login logic for social users
     @classmethod
     def social_login(cls, data: AuthSocialLoginSchema, db: Session):
         username = data.username
@@ -84,6 +86,7 @@ class AuthModule:
             "refresh_token": cls.verify_exp_and_get_refresh_token(db, query_auth.refresh_token, query_user.id, query_user.username),
         })
 
+    # signup logic for basic users
     @classmethod
     def basic_signup(cls, data: AuthBasicSignupSchema, db: Session):
         # TODO: password policy
@@ -91,14 +94,17 @@ class AuthModule:
         password = data.password
         confirm_password = data.confirm_password
 
+        # search if user exists
         query_user = get_user_by_username(db, username)
         if query_user:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"username `{username}` is already used")
 
+        # verify if password confirms
         if not cls.verify_password_confirmation(password, confirm_password):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"password confirmation does not match")
 
         try:
+            # insert new user
             inserted_user = create_user(db, username, cls.get_password_hash(password))
             inserted_auth = create_auth(db, inserted_user.id, AuthType.BASIC.value, None, cls.generate_jwt_token(inserted_user.id, username, REFRESH_TOKEN_EXP))
             db.commit()
@@ -108,6 +114,7 @@ class AuthModule:
             db.rollback()
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"unhandled error triggered: {str(e)}")
 
+    # signup logic for social users
     @classmethod
     def social_signup(cls, data: AuthSocialSignupSchema, db: Session):
         username = data.username
@@ -115,11 +122,13 @@ class AuthModule:
         auth_key = data.auth_key
         auth_type = data.auth_type
 
+        # search if user exists
         query_user = get_user_by_username(db, username)
         if query_user:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"username `{username}` is already used")
 
         try:
+            # insert new user
             inserted_user = create_user(db, username, cls.get_password_hash(password))
             inserted_auth = create_auth(db, inserted_user.id, auth_type.value, auth_key, cls.generate_jwt_token(inserted_user.id, username, REFRESH_TOKEN_EXP))
             db.commit()
@@ -129,6 +138,7 @@ class AuthModule:
             db.rollback()
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"unhandled error triggered: {str(e)}")
 
+    # renew access token and refresh token
     @classmethod
     def refresh_token(cls, data: AuthRefreshTokenSchema, db: Session):
         try:
@@ -144,20 +154,24 @@ class AuthModule:
         except Exception as e:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"invalid refresh token received: {str(e)}")
 
+    # verify if plain password matches to hashed password
     @classmethod
     def verify_password_hash(cls, plain_password: str, hashed_password: str):
         return cls.pwd_context.verify(plain_password, hashed_password)
 
+    # verify if password and confirm password matches
     @classmethod
     def verify_password_confirmation(cls, password: str, confirm_password: str):
         if password == confirm_password:
             return True
         return False
 
+    # convert password to brypt hashed password and return
     @classmethod
     def get_password_hash(cls, plain_password: str):
         return cls.pwd_context.hash(plain_password)
 
+    # generate a new jwt token
     @classmethod
     def generate_jwt_token(cls, user_id: int, username: str, time_delta: int):
         payload = {
@@ -167,6 +181,7 @@ class AuthModule:
         }
         return jwt.encode(payload, os.getenv("JWT_SECRET_KEY"), algorithm=os.getenv("JWT_ALGORITHM"))
 
+    # decode the jwt token and return payload
     @classmethod
     def decode_jwt_token(cls, token: str):
         try:
@@ -174,6 +189,8 @@ class AuthModule:
         except Exception as e:
             raise e
 
+    # verify refresh token expiration
+    # if expired generate new refresh token
     @classmethod
     def verify_exp_and_get_refresh_token(cls, db: Session, token: str, user_id: int, username: str):
         try:
