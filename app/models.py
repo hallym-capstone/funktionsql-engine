@@ -38,6 +38,7 @@ class Auth(Base):
     user_id = Column(Integer, ForeignKey(User.id), nullable=False)
     type = Column(Integer, nullable=False)
     auth_key = Column(String(256), unique=True, nullable=True)
+    refresh_token = Column(String(256), nullable=False, default="")
 
     user = relationship(User)
 

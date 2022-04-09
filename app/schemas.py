@@ -21,6 +21,7 @@ class AuthLoginSchema(BaseModel):
 class AuthBasicSignupSchema(BaseModel):
     username: str
     password: str
+    confirm_password: str
 
 
 class AuthSocialSignupSchema(BaseModel):
@@ -45,4 +46,22 @@ class AuthSignupResponse(BaseModel):
             id=id,
             username=username,
             type=type,
+        )
+
+
+class AuthLoginResponse(BaseModel):
+    id: int
+    username: str
+    type: AuthType
+    access_token: str
+    refresh_token: str
+
+    @classmethod
+    def load(cls, data: dict):
+        return AuthLoginResponse(
+            id=data["id"],
+            username=data["username"],
+            type=data["type"],
+            access_token=data["access_token"],
+            refresh_token=data["refresh_token"],
         )
