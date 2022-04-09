@@ -7,12 +7,31 @@ from dotenv import load_dotenv
 from fastapi import Request, status
 from fastapi.exceptions import HTTPException
 
+from app.schemas import AuthBasicSignupSchema, AuthLoginSchema, AuthRefreshTokenSchema, AuthSocialSignupSchema
+
 
 env_path = Path("config") / ".env"
 load_dotenv(dotenv_path=env_path)
 
 
 class AuthModule:
+
+    @classmethod
+    def login(cls, data: AuthLoginSchema):
+        username = data.username
+        password = data.password
+
+    @classmethod
+    def basic_signup(cls, data: AuthBasicSignupSchema):
+        pass
+
+    @classmethod
+    def social_signup(cls, data: AuthSocialSignupSchema):
+        pass
+
+    @classmethod
+    def refresh_token(cls, data: AuthRefreshTokenSchema):
+        pass
 
     @classmethod
     def validate_token(cls, req: Request):
