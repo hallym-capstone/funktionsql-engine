@@ -6,8 +6,12 @@ from dotenv import load_dotenv
 
 from fastapi import Request, status
 from fastapi.exceptions import HTTPException
+from passlib.context import CryptContext
+from sqlalchemy.orm.session import Session
+from app.crud import create_auth, create_user, get_user_by_username
+from app.models import AuthType
 
-from app.schemas import AuthBasicSignupSchema, AuthLoginSchema, AuthRefreshTokenSchema, AuthSocialSignupSchema
+from app.schemas import AuthBasicSignupSchema, AuthLoginSchema, AuthRefreshTokenSchema, AuthSignupResponse, AuthSocialSignupSchema
 
 
 env_path = Path("config") / ".env"
@@ -16,14 +20,34 @@ load_dotenv(dotenv_path=env_path)
 
 class AuthModule:
 
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
     @classmethod
-    def login(cls, data: AuthLoginSchema):
+    def login(cls, data: AuthLoginSchema, db: Session):
         username = data.username
         password = data.password
 
+        query_user = get_user_by_username(db, username)
+        if not query_user:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="unauthorized user credentials")
+
+        if not cls.verify_password(password, query_user.password):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="unauthorized user credentials")
+
     @classmethod
-    def basic_signup(cls, data: AuthBasicSignupSchema):
-        pass
+    def basic_signup(cls, data: AuthBasicSignupSchema, db: Session):
+        # TODO: password policy
+        username = data.username
+        password = data.password
+
+        query_user = get_user_by_username(db, username)
+        if query_user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"username `{username}` is already taken")
+
+        inserted_user = create_user(db, username, cls.get_password_hash(password))
+        inserted_auth = create_auth(db, inserted_user.id, AuthType.BASIC.value, None)
+
+        return AuthSignupResponse.load(inserted_user.id, username, inserted_auth.type)
 
     @classmethod
     def social_signup(cls, data: AuthSocialSignupSchema):
@@ -32,6 +56,14 @@ class AuthModule:
     @classmethod
     def refresh_token(cls, data: AuthRefreshTokenSchema):
         pass
+
+    @classmethod
+    def verify_password(cls, plain_password: str, hashed_password: str):
+        return cls.pwd_context.verify(plain_password, hashed_password)
+
+    @classmethod
+    def get_password_hash(cls, plain_password: str):
+        return cls.pwd_context.hash(plain_password)
 
     @classmethod
     def validate_token(cls, req: Request):
