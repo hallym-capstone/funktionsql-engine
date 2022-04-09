@@ -4,15 +4,17 @@ import jwt
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-
+from sqlalchemy.orm.session import Session
 from fastapi import Request, status
 from fastapi.exceptions import HTTPException
 from passlib.context import CryptContext
-from sqlalchemy.orm.session import Session
-from app.crud import create_auth, create_user, get_auth_by_user_id, get_user_by_username, update_auth_refresh_token_by_user_id
-from app.models import AuthType
 
-from app.schemas import AuthBasicSignupSchema, AuthLoginResponse, AuthBasicLoginSchema, AuthRefreshTokenSchema, AuthSignupResponse, AuthSocialLoginSchema, AuthSocialSignupSchema
+from app.models import AuthType
+from app.crud import create_auth, create_user, get_auth_by_user_id, get_user_by_username, update_auth_refresh_token_by_user_id
+from app.schemas import (
+    AuthBasicSignupSchema, AuthLoginResponse, AuthBasicLoginSchema, AuthRefreshTokenSchema,
+    AuthSignupResponse, AuthSocialLoginSchema, AuthSocialSignupSchema,
+)
 
 
 env_path = Path("config") / ".env"
