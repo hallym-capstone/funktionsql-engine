@@ -27,6 +27,7 @@ class AuthSocialSignupSchema(BaseModel):
     username: str
     password: str
     auth_key: str
+    auth_type: AuthType
 
 
 class AuthRefreshTokenSchema(BaseModel):

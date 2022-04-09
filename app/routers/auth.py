@@ -37,7 +37,7 @@ async def social_signup(
     data: AuthSocialSignupSchema,
     db: Session = Depends(get_db),
 ):
-    pass
+    return AuthModule.social_signup(data, db)
 
 
 @router.post("/tokens/refresh")
