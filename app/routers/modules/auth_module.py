@@ -12,7 +12,7 @@ from sqlalchemy.orm.session import Session
 from app.crud import create_auth, create_user, get_auth_by_user_id, get_user_by_username, update_auth_refresh_token_by_user_id
 from app.models import AuthType
 
-from app.schemas import AuthBasicSignupSchema, AuthLoginResponse, AuthLoginSchema, AuthRefreshTokenSchema, AuthSignupResponse, AuthSocialSignupSchema
+from app.schemas import AuthBasicSignupSchema, AuthLoginResponse, AuthBasicLoginSchema, AuthRefreshTokenSchema, AuthSignupResponse, AuthSocialLoginSchema, AuthSocialSignupSchema
 
 
 env_path = Path("config") / ".env"
@@ -27,7 +27,7 @@ class AuthModule:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     @classmethod
-    def basic_login(cls, data: AuthLoginSchema, db: Session):
+    def basic_login(cls, data: AuthBasicLoginSchema, db: Session):
         username = data.username
         password = data.password
 
@@ -39,6 +39,35 @@ class AuthModule:
         # verify if auth type is BASIC
         query_auth = get_auth_by_user_id(db, query_user.id)
         if query_auth.type != AuthType.BASIC.value:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="unauthorized user credentials")
+
+        # verify if password matches
+        if not cls.verify_password_hash(password, query_user.password):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="unauthorized user credentials")
+
+        return AuthLoginResponse.load({
+            "id": query_user.id,
+            "username": query_user.username,
+            "type": query_auth.type,
+            "access_token": cls.generate_jwt_token(query_user.id, query_user.username, ACCESS_TOKEN_EXP),
+            "refresh_token": cls.verify_exp_and_get_refresh_token(db, query_auth.refresh_token, query_user.id, query_user.username),
+        })
+
+    @classmethod
+    def social_login(cls, data: AuthSocialLoginSchema, db: Session):
+        username = data.username
+        password = data.password
+        auth_key = data.auth_key
+        auth_type = data.auth_type
+
+        # search if user exists
+        query_user = get_user_by_username(db, username)
+        if not query_user:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="unauthorized user credentials")
+
+        # verify if auth credential matches
+        query_auth = get_auth_by_user_id(db, query_user.id)
+        if query_auth.type != auth_type or query_auth.auth_key != auth_key:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="unauthorized user credentials")
 
         # verify if password matches

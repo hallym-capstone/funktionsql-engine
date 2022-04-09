@@ -9,7 +9,7 @@ from starlette.responses import JSONResponse
 from app.database import get_db
 from app.models import AuthType
 from app.routers.modules.auth_module import AuthModule
-from app.schemas import AuthBasicSignupSchema, AuthLoginSchema, AuthRefreshTokenSchema, AuthSocialSignupSchema
+from app.schemas import AuthBasicSignupSchema, AuthBasicLoginSchema, AuthRefreshTokenSchema, AuthSocialLoginSchema, AuthSocialSignupSchema
 
 
 router = APIRouter()
@@ -17,11 +17,19 @@ SECRET_KEY = 'secret_key'  # 임시
 
 
 @router.post("/login/basic")
-async def login_temp(
-    data: AuthLoginSchema,
+async def basic_login(
+    data: AuthBasicLoginSchema,
     db: Session = Depends(get_db),
 ):
     return AuthModule.basic_login(data, db)
+
+
+@router.post("/login/social")
+async def social_login(
+    data: AuthSocialLoginSchema,
+    db: Session = Depends(get_db),
+):
+    return AuthModule.social_login(data, db)
 
 
 @router.post("/signup/basic")

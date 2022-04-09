@@ -13,9 +13,16 @@ class CreateDatabaseSchema(BaseModel):
     api_key: str
 
 
-class AuthLoginSchema(BaseModel):
+class AuthBasicLoginSchema(BaseModel):
     username: str
     password: str
+
+
+class AuthSocialLoginSchema(BaseModel):
+    username: str
+    password: str
+    auth_key: str
+    auth_type: AuthType
 
 
 class AuthBasicSignupSchema(BaseModel):
