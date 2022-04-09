@@ -16,12 +16,12 @@ router = APIRouter()
 SECRET_KEY = 'secret_key'  # 임시
 
 
-@router.post("/login")
+@router.post("/login/basic")
 async def login_temp(
     data: AuthLoginSchema,
     db: Session = Depends(get_db),
 ):
-    pass
+    return AuthModule.basic_login(data, db)
 
 
 @router.post("/signup/basic")

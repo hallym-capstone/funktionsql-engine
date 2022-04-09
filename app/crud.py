@@ -13,8 +13,16 @@ def get_user_by_username(db: Session, username: str):
     return db.query(User).filter(User.username == username).first()
 
 
+def get_auth_by_user_id(db: Session, user_id: int):
+    return db.query(Auth).filter(Auth.user_id == user_id).first()
+
+
 def get_auth_by_api_key(db: Session, api_key: str):
     return db.query(Auth).filter(Auth.auth_key == api_key).first()
+
+
+def update_auth_refresh_token_by_user_id(db: Session, user_id: int, refresh_token: str):
+    db.query(Auth).filter(Auth.user_id == user_id).update({Auth.refresh_token: refresh_token})
 
 
 def get_database_by_user_id_and_name(db: Session, user_id: int, name: str):
@@ -40,8 +48,8 @@ def create_user(db: Session, username: str, hashed_password: str):
     return query_user
 
 
-def create_auth(db: Session, user_id: int, type: AuthType, auth_key: Union[str, None]):
-    query_auth = Auth(user_id=user_id, type=type, auth_key=auth_key)
+def create_auth(db: Session, user_id: int, type: AuthType, auth_key: Union[str, None], refresh_token: str):
+    query_auth = Auth(user_id=user_id, type=type, auth_key=auth_key, refresh_token=refresh_token)
     db.add(query_auth)
     db.flush()
     return query_auth
