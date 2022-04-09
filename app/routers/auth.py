@@ -1,15 +1,50 @@
 import jwt
 import pymysql
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from datetime import datetime, timedelta
+from sqlalchemy.orm.session import Session
 from starlette.responses import JSONResponse
 
+from app.database import get_db
 from app.models import AuthType
+from app.schemas import AuthBasicSignupSchema, AuthLoginSchema, AuthRefreshTokenSchema, AuthSocialSignupSchema
 
 
 router = APIRouter()
 SECRET_KEY = 'secret_key'  # 임시
+
+
+@router.post("/login")
+async def login_temp(
+    data: AuthLoginSchema,
+    db: Session = Depends(get_db),
+):
+    pass
+
+
+@router.post("/signup/basic")
+async def basic_signup(
+    data: AuthBasicSignupSchema,
+    db: Session = Depends(get_db),
+):
+    pass
+
+
+@router.post("/signup/social")
+async def social_signup(
+    data: AuthSocialSignupSchema,
+    db: Session = Depends(get_db),
+):
+    pass
+
+
+@router.post("/tokens/refresh")
+async def refresh_token(
+    data: AuthRefreshTokenSchema,
+    db: Session = Depends(get_db),
+):
+    pass
 
 
 @router.get("/login", status_code=200)
@@ -25,7 +60,7 @@ async def login(auth_type: AuthType, username: str = None, password: str = None,
         cur.execute('SELECT id, username, password FROM Users WHERE username = %s', username)
         info = cur.fetchone()
 
-        if info is None: #계정 존재여부 확인
+        if info is None:  # 계정 존재여부 확인
             return JSONResponse(status_code=400, content=dict(msg="NO MATCH USER"))
         else:
             if info['password'] != password:  # 비밀번호 일치여부 확인
@@ -44,7 +79,6 @@ async def login(auth_type: AuthType, username: str = None, password: str = None,
     return JSONResponse(status_code=200, content=token)  # token 반환
 
 
-
 @router.get("/register", status_code=200)
 async def register(username, password, auth_type: AuthType, token_id: str = None):
     try:
@@ -54,7 +88,7 @@ async def register(username, password, auth_type: AuthType, token_id: str = None
         cur.execute('SELECT * FROM Users WHERE username=%s', username)
         exist = cur.fetchone()
         if exist is not None:
-            return JSONResponse(status_code=400, content=dict(msg = "Unavailable ID"))
+            return JSONResponse(status_code=400, content=dict(msg="Unavailable ID"))
 
         cur.execute('INSERT INTO Users (username, password) VALUES (%s,%s)', (username, password))
         conn.commit()
@@ -67,24 +101,22 @@ async def register(username, password, auth_type: AuthType, token_id: str = None
         cur.close()
         conn.close()
 
-    return JSONResponse(status_code=200, content=dict(msg = "Success"))
-
+    return JSONResponse(status_code=200, content=dict(msg="Success"))
 
 
 def create_access_token(username, user_id):
     payload = {
-        'user_id' : user_id,
-        'username' : username,
-        'exp' : datetime.utcnow() + timedelta(hours=2)
+        'user_id': user_id,
+        'username': username,
+        'exp': datetime.utcnow() + timedelta(hours=2)
     }
     access_token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
     return access_token
 
 
-
 def create_refresh_token(username, user_id):
     payload = {
-        'user_id' : user_id,
+        'user_id': user_id,
         'username': username,
         'exp': datetime.utcnow() + timedelta(hours=24*7)
     }
