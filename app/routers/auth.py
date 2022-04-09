@@ -12,6 +12,7 @@ from app.schemas import (
 router = APIRouter()
 
 
+# login api route for basic users
 @router.post("/login/basic")
 async def basic_login(
     data: AuthBasicLoginSchema,
@@ -20,6 +21,7 @@ async def basic_login(
     return AuthModule.basic_login(data, db)
 
 
+# login api route for social users
 @router.post("/login/social")
 async def social_login(
     data: AuthSocialLoginSchema,
@@ -28,6 +30,7 @@ async def social_login(
     return AuthModule.social_login(data, db)
 
 
+# signup api route for basic users
 @router.post("/signup/basic")
 async def basic_signup(
     data: AuthBasicSignupSchema,
@@ -36,6 +39,7 @@ async def basic_signup(
     return AuthModule.basic_signup(data, db)
 
 
+# signup api route for social users
 @router.post("/signup/social")
 async def social_signup(
     data: AuthSocialSignupSchema,
@@ -44,6 +48,7 @@ async def social_signup(
     return AuthModule.social_signup(data, db)
 
 
+# token refresh api route
 @router.post("/tokens/refresh")
 async def refresh_token(
     data: AuthRefreshTokenSchema,
