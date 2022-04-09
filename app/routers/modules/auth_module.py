@@ -13,7 +13,7 @@ from app.models import AuthType
 from app.crud import create_auth, create_user, get_auth_by_user_id, get_user_by_username, update_auth_refresh_token_by_user_id
 from app.schemas import (
     AuthBasicSignupSchema, AuthLoginResponse, AuthBasicLoginSchema, AuthRefreshTokenSchema,
-    AuthSignupResponse, AuthSocialLoginSchema, AuthSocialSignupSchema,
+    AuthSignupResponse, AuthSocialLoginSchema, AuthSocialSignupSchema, AuthTokenRefreshResponse,
 )
 
 
@@ -130,8 +130,19 @@ class AuthModule:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"unhandled error triggered: {str(e)}")
 
     @classmethod
-    def refresh_token(cls, data: AuthRefreshTokenSchema):
-        pass
+    def refresh_token(cls, data: AuthRefreshTokenSchema, db: Session):
+        try:
+            decoded_token = cls.decode_jwt_token(data.refresh_token)
+
+            user_id = decoded_token["user_id"]
+            username = decoded_token["username"]
+
+            return AuthTokenRefreshResponse.load({
+                "access_token": cls.generate_jwt_token(user_id, username, ACCESS_TOKEN_EXP),
+                "refresh_token": cls.verify_exp_and_get_refresh_token(db, data.refresh_token, user_id, username),
+            })
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"invalid refresh token received: {str(e)}")
 
     @classmethod
     def verify_password_hash(cls, plain_password: str, hashed_password: str):
@@ -155,6 +166,13 @@ class AuthModule:
             "exp": datetime.utcnow() + timedelta(hours=time_delta),
         }
         return jwt.encode(payload, os.getenv("JWT_SECRET_KEY"), algorithm=os.getenv("JWT_ALGORITHM"))
+
+    @classmethod
+    def decode_jwt_token(cls, token: str):
+        try:
+            return jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")])
+        except Exception as e:
+            raise e
 
     @classmethod
     def verify_exp_and_get_refresh_token(cls, db: Session, token: str, user_id: int, username: str):
