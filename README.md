@@ -25,8 +25,5 @@ uvicorn main:app --reload
 ### Run by Docker
 ```
 # Build docker image
-docker build -t funktionsql:0.0.1 .
-
-# Run docker image
-docker run -d -p 8000:8000 --name funktionsql --env-file ./config/.env funktionsql:0.0.1
+docker-compose up -d
 ```
