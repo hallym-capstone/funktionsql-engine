@@ -60,7 +60,6 @@ class AuthModule:
     @classmethod
     def social_login(cls, data: AuthSocialLoginSchema, db: Session):
         username = data.username
-        password = data.password
         auth_key = data.auth_key
         auth_type = data.auth_type
 
@@ -72,10 +71,6 @@ class AuthModule:
         # verify if auth credential matches
         query_auth = get_auth_by_user_id(db, query_user.id)
         if query_auth.type != auth_type or query_auth.auth_key != auth_key:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="unauthorized user credentials")
-
-        # verify if password matches
-        if not cls.verify_password_hash(password, query_user.password):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="unauthorized user credentials")
 
         return AuthLoginResponse.load({
@@ -118,7 +113,6 @@ class AuthModule:
     @classmethod
     def social_signup(cls, data: AuthSocialSignupSchema, db: Session):
         username = data.username
-        password = data.password
         auth_key = data.auth_key
         auth_type = data.auth_type
 
@@ -129,7 +123,7 @@ class AuthModule:
 
         try:
             # insert new user
-            inserted_user = create_user(db, username, cls.get_password_hash(password))
+            inserted_user = create_user(db, username, "")
             inserted_auth = create_auth(db, inserted_user.id, auth_type.value, auth_key, cls.generate_jwt_token(inserted_user.id, username, REFRESH_TOKEN_EXP))
             db.commit()
 
