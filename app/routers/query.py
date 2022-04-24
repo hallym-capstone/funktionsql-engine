@@ -14,9 +14,9 @@ router = APIRouter()
 @router.post("/databases")
 async def create_database(
     data: CreateDatabaseSchema,
+    user_id: int = Depends(AuthModule.validate_token),
     db: Session = Depends(get_db),
 ):
-    # TODO: validate auth
     return QueryModule.create_database(data, db)
 
 
