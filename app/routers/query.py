@@ -11,13 +11,14 @@ from app.runtime.engine import RuntimeEngine
 router = APIRouter()
 
 
+# TODO: add error code
 @router.post("/databases")
 async def create_database(
     data: CreateDatabaseSchema,
     user_id: int = Depends(AuthModule.validate_token),
     db: Session = Depends(get_db),
 ):
-    return QueryModule.create_database(data, db)
+    return QueryModule.create_database(data, user_id, db)
 
 
 @router.get("/databases")

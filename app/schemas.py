@@ -10,7 +10,6 @@ class ExecuteQuerySchema(BaseModel):
 
 class CreateDatabaseSchema(BaseModel):
     database_name: str
-    api_key: str
 
 
 class AuthBasicLoginSchema(BaseModel):
