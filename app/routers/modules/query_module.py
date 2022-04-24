@@ -37,7 +37,7 @@ class QueryModule:
         pass
 
     @classmethod
-    def create_database(cls, data: CreateDatabaseSchema, db: Session):
+    def create_database(cls, data: CreateDatabaseSchema, user_id: int, db: Session):
         query_auth: Auth = cls.validate_auth(db, data.api_key)
         if not query_auth:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"unauthorized user")

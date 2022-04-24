@@ -208,10 +208,16 @@ class AuthModule:
         if token[0] != "Bearer":
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized user")
 
-        decoded_token = cls.decode_jwt(token[1])
-        return decoded_token["user_id"]
+        try:
+            decoded_token = cls.decode_jwt(token[1])
+            return decoded_token["user_id"]
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized user")
 
     @classmethod
     def decode_jwt(cls, token: str):
-        decoded_token = jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")])
-        return decoded_token
+        try:
+            decoded_token = jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")])
+            return decoded_token
+        except Exception as e:
+            raise e
