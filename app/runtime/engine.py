@@ -4,8 +4,9 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
 
-from app.crud import create_function, get_function_by_database_id_and_name
+from app.crud import create_function, get_database_by_id, get_function_by_database_id_and_name
 from app.execution.engine import ExecutionEngine
+from app.schemas import ExecuteQuerySchema
 
 
 class RuntimeEngine:
@@ -15,8 +16,18 @@ class RuntimeEngine:
         print("[*] initialized Runtime Engine")
 
     @classmethod
-    def create_function(cls, database_id: int, function_name: str, file: bytes, db: Session):
-        # TODO: validate database
+    def create_function(cls, database_id: int, function_name: str, file: bytes, user_id: int, db: Session):
+        query_database = get_database_by_id(db, database_id)
+        if not query_database:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"database with id={database_id} does not exist")
+
+        if query_database.user_id != user_id:
+            raise HTTPException(status_code=status.HTTP_403, detail=f"permission denied")
+
+        query_function = get_function_by_database_id_and_name(db, database_id, function_name)
+        if query_function:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"function name with '{function_name}' already exists")
+
         random_uuid = uuid.uuid4()
         lambda_key = f"{database_id}_{function_name}_{random_uuid}"
         is_created = ExecutionEngine.create_lambda_executable(lambda_key, file)
@@ -26,8 +37,17 @@ class RuntimeEngine:
         return create_function(db, database_id, function_name, lambda_key)
 
     @classmethod
-    def consume_execute_request(cls, database_id: int, function_name: str, query_selector: str, db: Session):
-        # TODO: validate database
+    def consume_execute_request(cls, database_id: int, data: ExecuteQuerySchema, user_id: int, db: Session):
+        query_selector = data.query_selector
+        function_name = data.function_name
+
+        query_database = get_database_by_id(db, database_id)
+        if not query_database:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"database with id={database_id} does not exist")
+
+        if query_database.user_id != user_id:
+            raise HTTPException(status_code=status.HTTP_403, detail=f"permission denied")
+
         query_function = get_function_by_database_id_and_name(db, database_id, function_name)
         if not query_function:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"function does not exist(database_id={database_id}, name={function_name})")
