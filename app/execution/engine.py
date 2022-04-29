@@ -29,7 +29,7 @@ class ExecutionEngine:
     @classmethod
     def create_lambda_executable(cls, lambda_key: str, file: bytes):
         if cls.iam_client is None or cls.lambda_client is None:
-            return
+            return False
 
         role = cls.iam_client.get_role(RoleName="LambdaBasicExecution")
         response = cls.lambda_client.create_function(

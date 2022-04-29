@@ -25,6 +25,10 @@ def update_auth_refresh_token_by_user_id(db: Session, user_id: int, refresh_toke
     db.query(Auth).filter(Auth.user_id == user_id).update({Auth.refresh_token: refresh_token})
 
 
+def get_database_by_id(db: Session, id: int):
+    return db.query(Database).filter(Database.id == id).first()
+
+
 def get_database_by_user_id_and_name(db: Session, user_id: int, name: str):
     return db.query(Database).filter(and_(Database.user_id == user_id, Database.name == name)).first()
 
@@ -35,6 +39,14 @@ def get_databases_by_user_id(db: Session, user_id: int):
 
 def get_database_by_id_and_user_id(db: Session, id: int, user_id: int):
     return db.query(Database).filter(and_(Database.id == id, Database.user_id == user_id)).first()
+
+
+def get_function_by_id(db: Session, id: int):
+    return db.query(Function).filter(Function.id == id).first()
+
+
+def get_functions_by_database_id(db: Session, database_id: int):
+    return db.query(Function).filter(Function.database_id == database_id).all()
 
 
 def get_function_by_database_id_and_name(db: Session, database_id: int, name: str):
