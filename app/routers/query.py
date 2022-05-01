@@ -12,6 +12,9 @@ router = APIRouter()
 
 
 # TODO: add error code
+# TODO: save code string
+# TODO: add comments
+# TODO: add api docs
 @router.post("/databases")
 async def create_database(
     data: CreateDatabaseSchema,
