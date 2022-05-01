@@ -75,8 +75,8 @@ def create_database(db: Session, user_id: int, name: str):
     return query_database
 
 
-def create_function(db: Session, database_id: int, name: str, lambda_key: str):
-    query_function = Function(database_id=database_id, name=name, lambda_key=lambda_key)
+def create_function(db: Session, database_id: int, name: str, code: str, lambda_key: str):
+    query_function = Function(database_id=database_id, name=name, code=code, lambda_key=lambda_key)
     db.add(query_function)
     db.commit()
     db.refresh(query_function)

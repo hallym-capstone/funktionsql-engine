@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, File
+from fastapi import APIRouter, Depends, File, status
+from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
 
 from app.database import get_db
@@ -12,7 +13,6 @@ router = APIRouter()
 
 
 # TODO: add error code
-# TODO: save code string
 # TODO: add comments
 # TODO: add api docs
 @router.post("/databases")
@@ -55,11 +55,17 @@ async def execute_query(
 async def create_function(
     database_id: int,
     function_name: str,
-    file: bytes = File(...),
+    code_file: bytes = File(...),
+    zip_file: bytes = File(...),
     user_id: int = Depends(AuthModule.validate_token),
     db: Session = Depends(get_db),
 ):
-    return RuntimeEngine.create_function(database_id, function_name, file, user_id, db)
+    code: str = ""
+    try:
+        code = code_file.decode("utf-8")
+    except:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="code_file decode error")
+    return RuntimeEngine.create_function(database_id, function_name, code, zip_file, user_id, db)
 
 
 @router.get("/databases/{database_id}/functions")

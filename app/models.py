@@ -4,7 +4,7 @@ from enum import Enum, IntEnum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.sql.sqltypes import DateTime
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Text
 
 from app.database import Base
 
@@ -60,6 +60,7 @@ class Function(Base):
     id = Column(Integer, primary_key=True, index=True)
     database_id = Column(Integer, ForeignKey(Database.id), nullable=False)
     name = Column(String(64), nullable=False)
+    code = Column(Text())
     lambda_key = Column(String(256), nullable=False)
     created_at = Column(DateTime(timezone=True), nullable=False, default=func.now())
     updated_at = Column(DateTime(timezone=True), nullable=False, default=func.now())
