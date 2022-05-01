@@ -16,7 +16,7 @@ class RuntimeEngine:
         print("[*] initialized Runtime Engine")
 
     @classmethod
-    def create_function(cls, database_id: int, function_name: str, file: bytes, user_id: int, db: Session):
+    def create_function(cls, database_id: int, function_name: str, code: str, zip_file: bytes, user_id: int, db: Session):
         query_database = get_database_by_id(db, database_id)
         if not query_database:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"database with id={database_id} does not exist")
@@ -30,11 +30,11 @@ class RuntimeEngine:
 
         random_uuid = uuid.uuid4()
         lambda_key = f"{database_id}_{function_name}_{random_uuid}"
-        is_created = ExecutionEngine.create_lambda_executable(lambda_key, file)
+        is_created = ExecutionEngine.create_lambda_executable(lambda_key, zip_file)
         if not is_created:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"lambda executable creation error")
 
-        return create_function(db, database_id, function_name, lambda_key)
+        return create_function(db, database_id, function_name, code, lambda_key)
 
     @classmethod
     def consume_execute_request(cls, database_id: int, data: ExecuteQuerySchema, user_id: int, db: Session):
