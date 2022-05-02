@@ -18,12 +18,17 @@ class ExecutionEngine:
     def initialize(cls):
         print("[*] initialized Execution Engine")
 
-        cls.iam_client = boto3.client("iam")
+        cls.iam_client = boto3.client(
+            "iam",
+            region_name="ap-northeast-2",
+            aws_access_key_id=os.getenv("AWS_ACCESS_KEY"),
+            aws_secret_access_key=os.getenv("AWS_SECRET_KEY"),
+        )
         cls.lambda_client = boto3.client(
             "lambda",
             region_name="ap-northeast-2",
             aws_access_key_id=os.getenv("AWS_ACCESS_KEY"),
-            aws_secret_access_key=os.getenv("AWS_SECRET_KEY")
+            aws_secret_access_key=os.getenv("AWS_SECRET_KEY"),
         )
 
     @classmethod
