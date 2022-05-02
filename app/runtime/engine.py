@@ -40,6 +40,7 @@ class RuntimeEngine:
     def consume_execute_request(cls, database_id: int, data: ExecuteQuerySchema, user_id: int, db: Session):
         query_selector = data.query_selector
         function_name = data.function_name
+        parameters = data.parameters
 
         query_database = get_database_by_id(db, database_id)
         if not query_database:
@@ -53,7 +54,7 @@ class RuntimeEngine:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"function does not exist(database_id={database_id}, name={function_name})")
 
         if query_selector == "RUN":
-            is_succeeded, result = ExecutionEngine.run_lambda_executable(query_function.lambda_key)
+            is_succeeded, result = ExecutionEngine.run_lambda_executable(query_function.lambda_key, parameters)
             if not is_succeeded:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"lambda executable run failed({result})")
             return {"response": result}
