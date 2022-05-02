@@ -46,13 +46,21 @@ class ExecutionEngine:
         return False
 
     @classmethod
-    def run_lambda_executable(cls, lambda_key: str):
+    def run_lambda_executable(cls, lambda_key: str, parameters: dict = None):
         if cls.lambda_client is None:
             return
-        lambda_response = cls.lambda_client.invoke(
-            FunctionName=lambda_key,
-            InvocationType="RequestResponse",
-        )
+
+        if parameters:
+            lambda_response = cls.lambda_client.invoke(
+                FunctionName=lambda_key,
+                InvocationType="RequestResponse",
+                Payload=json.dumps(parameters),
+            )
+        else:
+            lambda_response = cls.lambda_client.invoke(
+                FunctionName=lambda_key,
+                InvocationType="RequestResponse",
+            )
         result = json.loads(lambda_response["Payload"].read().decode("utf-8"))
 
         if "statusCode" in result and result["statusCode"] == 200:

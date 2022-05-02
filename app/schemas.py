@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 
 from app.models import AuthType
@@ -6,6 +7,7 @@ from app.models import AuthType
 class ExecuteQuerySchema(BaseModel):
     query_selector: str
     function_name: str
+    parameters: Optional[dict]
 
 
 class CreateDatabaseSchema(BaseModel):
