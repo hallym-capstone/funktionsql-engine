@@ -7,13 +7,14 @@ from sqlalchemy.orm.session import Session
 from app.crud import create_function, get_database_by_id, get_function_by_database_id_and_name
 from app.execution.engine import ExecutionEngine
 from app.schemas import ExecuteQuerySchema
+from app.logging import logger
 
 
 class RuntimeEngine:
 
     @classmethod
     def initialize(cls):
-        print("[*] initialized Runtime Engine")
+        logger.info("[*] initialized Runtime Engine")
 
     @classmethod
     def create_function(cls, database_id: int, function_name: str, code: str, zip_file: bytes, user_id: int, db: Session):

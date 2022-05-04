@@ -5,6 +5,8 @@ import boto3
 from pathlib import Path
 from dotenv import load_dotenv
 
+from app.logging import logger
+
 
 env_path = Path("config") / ".env"
 load_dotenv(dotenv_path=env_path)
@@ -16,7 +18,7 @@ class ExecutionEngine:
 
     @classmethod
     def initialize(cls):
-        print("[*] initialized Execution Engine")
+        logger.info("[*] initialized Execution Engine")
 
         cls.iam_client = boto3.client(
             "iam",

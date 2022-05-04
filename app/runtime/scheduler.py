@@ -1,8 +1,11 @@
+from app.logging import logger
+
+
 class RuntimeScheduler:
 
     @classmethod
     def initialize(cls):
-        print("[*] initialized Runtime Scheduler")
+        logger.info("[*] initialized Runtime Scheduler")
 
     @classmethod
     def consume_scheduled_query(cls):
