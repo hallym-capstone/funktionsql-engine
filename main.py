@@ -39,7 +39,7 @@ async def healthcheck():
 @app.get("/openapi.json", include_in_schema=False)
 async def get_open_api_endpoint(credentials: HTTPBasicCredentials = Depends(security)):
     validate_credentials(credentials)
-    return JSONResponse(get_openapi(title="BiHolder-View-API", version="1.2.0", routes=app.routes))
+    return JSONResponse(get_openapi(title="FunktionsQL API", version="1.0.0", routes=app.routes))
 
 
 @app.get("/docs", include_in_schema=False)
