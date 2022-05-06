@@ -1,4 +1,3 @@
-from datetime import datetime
 from enum import Enum, IntEnum
 
 from sqlalchemy.orm import relationship
@@ -21,10 +20,14 @@ class ExecutionResultType(IntEnum, Enum):
     SUCCESS = 1
 
 
+class ExecutionLanguage(IntEnum, Enum):
+    PYTHON = 0
+    # TODO: add language
+
+
 class User(Base):
     __tablename__ = "Users"
 
-    # TODO: add email field
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String(64), unique=True, nullable=False)
     password = Column(String(64), nullable=False)
@@ -61,6 +64,7 @@ class Function(Base):
     database_id = Column(Integer, ForeignKey(Database.id), nullable=False)
     name = Column(String(64), nullable=False)
     code = Column(Text())
+    language = Column(Integer, nullable=False)
     lambda_key = Column(String(256), nullable=False)
     created_at = Column(DateTime(timezone=True), nullable=False, default=func.now())
     updated_at = Column(DateTime(timezone=True), nullable=False, default=func.now())

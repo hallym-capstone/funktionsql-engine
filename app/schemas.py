@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
 
-from app.models import AuthType
+from app.models import AuthType, ExecutionLanguage
 
 
 class ExecuteQuerySchema(BaseModel):
@@ -12,6 +12,12 @@ class ExecuteQuerySchema(BaseModel):
 
 class CreateDatabaseSchema(BaseModel):
     database_name: str
+
+
+class CreateFunctionSchema(BaseModel):
+    code: str
+    language: ExecutionLanguage
+    function_name: str
 
 
 class AuthBasicLoginSchema(BaseModel):
