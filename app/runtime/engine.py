@@ -24,6 +24,11 @@ class RuntimeEngine:
         language = data.language
         function_name = data.function_name
 
+        if not code:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid code string received")
+        if not function_name:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid function_name received")
+
         query_database = get_database_by_id(db, database_id)
         if not query_database:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"database with id={database_id} does not exist")
@@ -59,9 +64,14 @@ class RuntimeEngine:
 
     @classmethod
     def consume_execute_request(cls, database_id: int, data: ExecuteQuerySchema, user_id: int, db: Session):
-        query_selector = data.query_selector
+        query_selector = data.query_selector.lower()
         function_name = data.function_name
         parameters = data.parameters
+
+        if not query_selector:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid query_selector received")
+        if not function_name:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid function_name received")
 
         query_database = get_database_by_id(db, database_id)
         if not query_database:
@@ -74,7 +84,7 @@ class RuntimeEngine:
         if not query_function:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"function does not exist(database_id={database_id}, name={function_name})")
 
-        if query_selector == "RUN":
+        if query_selector == "run":
             is_succeeded, result = ExecutionEngine.run_lambda_executable(query_function.lambda_key, parameters)
             if not is_succeeded:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"lambda executable run failed({result})")
