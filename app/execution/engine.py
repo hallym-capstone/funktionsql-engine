@@ -43,7 +43,7 @@ class ExecutionEngine:
             FunctionName=lambda_key,
             Runtime="python3.9",  # TODO: support other languages
             Role=role["Role"]["Arn"],
-            Handler="lambda_function.lambda_handler",
+            Handler=f"{lambda_key}.lambda_handler",
             Code=dict(ZipFile=file),
             Timeout=300,
         )

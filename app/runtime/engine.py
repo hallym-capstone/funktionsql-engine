@@ -1,4 +1,6 @@
+import os
 import uuid
+import zipfile
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
@@ -6,7 +8,7 @@ from sqlalchemy.orm.session import Session
 
 from app.crud import create_function, get_database_by_id, get_function_by_database_id_and_name
 from app.execution.engine import ExecutionEngine
-from app.schemas import ExecuteQuerySchema
+from app.schemas import CreateFunctionSchema, ExecuteQuerySchema
 from app.logging import logger
 
 
@@ -17,7 +19,11 @@ class RuntimeEngine:
         logger.info("[*] initialized Runtime Engine")
 
     @classmethod
-    def create_function(cls, database_id: int, function_name: str, code: str, zip_file: bytes, user_id: int, db: Session):
+    def create_function(cls, database_id: int, data: CreateFunctionSchema, user_id: int, db: Session):
+        code = data.code
+        language = data.language
+        function_name = data.function_name
+
         query_database = get_database_by_id(db, database_id)
         if not query_database:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"database with id={database_id} does not exist")
@@ -31,11 +37,25 @@ class RuntimeEngine:
 
         random_uuid = uuid.uuid4()
         lambda_key = f"{database_id}_{function_name}_{random_uuid}"
-        is_created = ExecutionEngine.create_lambda_executable(lambda_key, zip_file)
+
+        code_file = open(f"{lambda_key}.py", "w")
+        code_file.write(data.code)
+        code_file.close()
+
+        zip_file = zipfile.ZipFile(f"{lambda_key}.zip", "w")
+        zip_file.write(f"{lambda_key}.py")
+        zip_file.close()
+
+        with open(f"{lambda_key}.zip", "rb") as read_zip_file:
+            bytes_content = read_zip_file.read()
+
+        is_created = ExecutionEngine.create_lambda_executable(lambda_key, bytes_content)
         if not is_created:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"lambda executable creation error")
 
-        return create_function(db, database_id, function_name, code, lambda_key)
+        os.remove(f"{lambda_key}.py")
+        os.remove(f"{lambda_key}.zip")
+        return create_function(db, database_id, function_name, code, language.value, lambda_key)
 
     @classmethod
     def consume_execute_request(cls, database_id: int, data: ExecuteQuerySchema, user_id: int, db: Session):
