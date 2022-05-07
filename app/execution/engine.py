@@ -61,17 +61,24 @@ class ExecutionEngine:
             lambda_response = cls.lambda_client.invoke(
                 FunctionName=lambda_key,
                 InvocationType="RequestResponse",
+                LogType="Tail",
                 Payload=json.dumps(parameters),
             )
         else:
             lambda_response = cls.lambda_client.invoke(
                 FunctionName=lambda_key,
                 InvocationType="RequestResponse",
+                LogType="Tail",
             )
-        result = json.loads(lambda_response["Payload"].read().decode("utf-8"))
 
-        if "statusCode" in result and result["statusCode"] == 200:
-            return True, result["body"]
+        if lambda_response:
+            result = json.loads(lambda_response["Payload"].read().decode("utf-8"))
+            if not result:
+                return True, "null"
+
+            if "errorMessage" in result:
+                return False, result["errorMessage"]
+            else:
+                return True, result
         else:
-            error_message = result["errorMessage"] if "errorMessage" in result else None
-            return False, error_message
+            return True, "null"
