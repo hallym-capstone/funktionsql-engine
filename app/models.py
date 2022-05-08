@@ -22,7 +22,10 @@ class ExecutionResultType(IntEnum, Enum):
 
 class ExecutionLanguage(IntEnum, Enum):
     PYTHON = 0
-    # TODO: add language
+    NODEJS = 1
+    JAVA = 2
+    RUBY = 3
+    GO = 4
 
 
 class User(Base):
