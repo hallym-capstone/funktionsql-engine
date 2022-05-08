@@ -54,7 +54,8 @@ class RuntimeEngine:
         with open(f"{lambda_key}.zip", "rb") as read_zip_file:
             bytes_content = read_zip_file.read()
 
-        is_created = ExecutionEngine.create_lambda_executable(lambda_key, bytes_content)
+        runtime_key = get_runtimeKey(language)
+        is_created = ExecutionEngine.create_lambda_executable(lambda_key, bytes_content, runtime_key)
         if not is_created:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"lambda executable creation error")
 
