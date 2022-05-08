@@ -34,14 +34,14 @@ class ExecutionEngine:
         )
 
     @classmethod
-    def create_lambda_executable(cls, lambda_key: str, file: bytes):
+    def create_lambda_executable(cls, lambda_key: str, file: bytes, runtime_key: str):
         if cls.iam_client is None or cls.lambda_client is None:
             return False
 
         role = cls.iam_client.get_role(RoleName="LambdaBasicExecution")
         response = cls.lambda_client.create_function(
             FunctionName=lambda_key,
-            Runtime="python3.9",  # TODO: support other languages
+            Runtime=runtime_key,
             Role=role["Role"]["Arn"],
             Handler=f"{lambda_key}.lambda_handler",
             Code=dict(ZipFile=file),
