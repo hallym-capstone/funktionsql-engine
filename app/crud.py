@@ -82,15 +82,16 @@ def create_function(db: Session, database_id: int, name: str, code: str, languag
     db.refresh(query_function)
     return query_function
 
+
 def get_runtimeKey(language: ExecutionLanguage):
     if language == ExecutionLanguage.PYTHON:
         return "python3.9"
     elif language == ExecutionLanguage.NODEJS:
-        return "Node.js 14.x"
+        return "nodejs16.x"
     elif language == ExecutionLanguage.JAVA:
-        return "Java 11"
+        return "java11"
     elif language == ExecutionLanguage.RUBY:
-        return "Ruby 2.7"
+        return "ruby2.7"
     elif language == ExecutionLanguage.GO:
         return "go1.x"
     else:
