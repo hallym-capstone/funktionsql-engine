@@ -32,12 +32,16 @@ class ExecutionQuerySelector(Enum):
     USE = "use"
     RUN = "run"
     SELECT = "select"
+    SHOW = "show"
 
 
-DATABASE_RELATED_SELECTOR = [
+COMMON_SELECTORS = [
+    ExecutionQuerySelector.SHOW.value,
+]
+DATABASE_RELATED_SELECTORS = [
     ExecutionQuerySelector.USE.value,
 ]
-FUNCTION_RELATED_SELECTOR = [
+FUNCTION_RELATED_SELECTORS = [
     ExecutionQuerySelector.RUN.value,
     ExecutionQuerySelector.SELECT.value,
 ]

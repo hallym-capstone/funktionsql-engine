@@ -6,9 +6,9 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
 
-from app.crud import create_function, get_database_by_id, get_database_by_user_id_and_name, get_function_by_database_id_and_name, get_runtimeKey
+from app.crud import create_function, get_database_by_id, get_database_by_user_id_and_name, get_databases_by_user_id, get_function_by_database_id_and_name, get_functions_by_database_id, get_runtimeKey
 from app.execution.engine import ExecutionEngine
-from app.models import DATABASE_RELATED_SELECTOR, FUNCTION_RELATED_SELECTOR
+from app.models import COMMON_SELECTORS, DATABASE_RELATED_SELECTORS, FUNCTION_RELATED_SELECTORS
 from app.schemas import CreateFunctionSchema, ExecuteQuerySchema
 from app.logging import logger
 
@@ -78,8 +78,19 @@ class RuntimeEngine:
         if not query_target:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid query_target received")
 
+        # 공통 쿼리
+        if query_selector in COMMON_SELECTORS:
+            if query_target == "databases":
+                query_databases = get_databases_by_user_id(db, user_id)
+                return {"response": list(map(lambda db: db.name, query_databases))}
+            elif query_target == "functions":
+                query_functions = get_functions_by_database_id(db, database_id)
+                return {"response": list(map(lambda fn: fn.name, query_functions))}
+            else:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"unsupported query target received({query_target})")
+
         # 데이터베이스 전용 쿼리
-        if query_selector in DATABASE_RELATED_SELECTOR:
+        elif query_selector in DATABASE_RELATED_SELECTORS:
             query_database = get_database_by_user_id_and_name(db, user_id, query_target)
             if not query_database:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"database with name={query_target} does not exist")
@@ -90,7 +101,7 @@ class RuntimeEngine:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"unsupported query selector received({query_selector})")
 
         # 함수 전용 쿼리
-        elif query_selector in FUNCTION_RELATED_SELECTOR:
+        elif query_selector in FUNCTION_RELATED_SELECTORS:
             query_database = get_database_by_id(db, database_id)
             if not query_database:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"database with id={database_id} does not exist")
