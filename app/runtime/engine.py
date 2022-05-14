@@ -93,6 +93,8 @@ class RuntimeEngine:
             if not is_succeeded:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"lambda executable run failed({result})")
             return {"response": result}
+        elif query_selector == "select":
+            return {"response": query_function.code}
         else:
             # TODO: support other query selectors
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"unsupported query selector received({query_selector})")
