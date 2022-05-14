@@ -5,9 +5,9 @@ from app.models import AuthType, ExecutionLanguage
 
 
 class ExecuteQuerySchema(BaseModel):
-    query_selector: str
-    function_name: str
-    parameters: Optional[dict]
+    query_selector: str = ""
+    query_target: str = ""
+    parameters: Optional[dict] = []
 
 
 class CreateDatabaseSchema(BaseModel):

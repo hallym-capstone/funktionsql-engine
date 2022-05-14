@@ -6,8 +6,9 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
 
-from app.crud import create_function, get_database_by_id, get_function_by_database_id_and_name, get_runtimeKey
+from app.crud import create_function, get_database_by_id, get_database_by_user_id_and_name, get_function_by_database_id_and_name, get_runtimeKey
 from app.execution.engine import ExecutionEngine
+from app.models import DATABASE_RELATED_SELECTOR, FUNCTION_RELATED_SELECTOR
 from app.schemas import CreateFunctionSchema, ExecuteQuerySchema
 from app.logging import logger
 
@@ -69,34 +70,50 @@ class RuntimeEngine:
     @classmethod
     def consume_execute_request(cls, database_id: int, data: ExecuteQuerySchema, user_id: int, db: Session):
         query_selector = data.query_selector.lower()
-        function_name = data.function_name
+        query_target = data.query_target
         parameters = data.parameters
 
         if not query_selector:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid query_selector received")
-        if not function_name:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid function_name received")
+        if not query_target:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid query_target received")
 
-        query_database = get_database_by_id(db, database_id)
-        if not query_database:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"database with id={database_id} does not exist")
+        # 데이터베이스 전용 쿼리
+        if query_selector in DATABASE_RELATED_SELECTOR:
+            query_database = get_database_by_user_id_and_name(db, user_id, query_target)
+            if not query_database:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"database with name={query_target} does not exist")
 
-        if query_database.user_id != user_id:
-            raise HTTPException(status_code=status.HTTP_403, detail=f"permission denied")
+            if query_selector == "use":
+                return {"response": query_database}
+            else:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"unsupported query selector received({query_selector})")
 
-        query_function = get_function_by_database_id_and_name(db, database_id, function_name)
-        if not query_function:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"function does not exist(database_id={database_id}, name={function_name})")
+        # 함수 전용 쿼리
+        elif query_selector in FUNCTION_RELATED_SELECTOR:
+            query_database = get_database_by_id(db, database_id)
+            if not query_database:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"database with id={database_id} does not exist")
 
-        if query_selector == "run":
-            is_succeeded, result = ExecutionEngine.run_lambda_executable(query_function.lambda_key, parameters)
-            if not is_succeeded:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"lambda executable run failed({result})")
-            return {"response": result}
-        elif query_selector == "select":
-            return {"response": query_function.code}
+            if query_database.user_id != user_id:
+                raise HTTPException(status_code=status.HTTP_403, detail=f"permission denied")
+
+            query_function = get_function_by_database_id_and_name(db, database_id, query_target)
+            if not query_function:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"function does not exist(database_id={database_id}, name={query_target})")
+
+            if query_selector == "run":
+                is_succeeded, result = ExecutionEngine.run_lambda_executable(query_function.lambda_key, parameters)
+                if not is_succeeded:
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"lambda executable run failed({result})")
+                return {"response": result}
+            elif query_selector == "select":
+                return {"response": query_function.code}
+            else:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"unsupported query selector received({query_selector})")
+
+        # 지원되지 않는 쿼리
         else:
-            # TODO: support other query selectors
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"unsupported query selector received({query_selector})")
 
     @classmethod

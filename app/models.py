@@ -28,6 +28,21 @@ class ExecutionLanguage(IntEnum, Enum):
     GO = 4
 
 
+class ExecutionQuerySelector(Enum):
+    USE = "use"
+    RUN = "run"
+    SELECT = "select"
+
+
+DATABASE_RELATED_SELECTOR = [
+    ExecutionQuerySelector.USE.value,
+]
+FUNCTION_RELATED_SELECTOR = [
+    ExecutionQuerySelector.RUN.value,
+    ExecutionQuerySelector.SELECT.value,
+]
+
+
 class User(Base):
     __tablename__ = "Users"
 
