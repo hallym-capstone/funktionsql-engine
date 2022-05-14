@@ -1,3 +1,3 @@
-def handler_name(event, context):
+def lambda_handler(event, context):
     # some logic
     return "some value"

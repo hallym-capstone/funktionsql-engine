@@ -42,24 +42,27 @@ class RuntimeEngine:
 
         random_uuid = uuid.uuid4()
         lambda_key = f"{database_id}_{function_name}_{random_uuid}"
+        runtime_key, runtime_extension, runtime_handler = get_runtimeKey(language, lambda_key)
 
-        code_file = open(f"{lambda_key}.py", "w")
+        code_file = open(f"{lambda_key}.{runtime_extension}", "w")
         code_file.write(data.code)
         code_file.close()
 
         zip_file = zipfile.ZipFile(f"{lambda_key}.zip", "w")
-        zip_file.write(f"{lambda_key}.py")
+        zip_file.write(f"{lambda_key}.{runtime_extension}")
         zip_file.close()
 
         with open(f"{lambda_key}.zip", "rb") as read_zip_file:
             bytes_content = read_zip_file.read()
 
-        runtime_key = get_runtimeKey(language)
-        is_created = ExecutionEngine.create_lambda_executable(lambda_key, bytes_content, runtime_key)
-        if not is_created:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"lambda executable creation error")
+        try:
+            is_created = ExecutionEngine.create_lambda_executable(lambda_key, bytes_content, runtime_key, runtime_handler)
+            if not is_created:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"lambda executable creation error")
+        except Exception as err:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err)
 
-        os.remove(f"{lambda_key}.py")
+        os.remove(f"{lambda_key}.{runtime_extension}")
         os.remove(f"{lambda_key}.zip")
         return create_function(db, database_id, function_name, code, language.value, lambda_key)
 

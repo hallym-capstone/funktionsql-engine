@@ -83,16 +83,16 @@ def create_function(db: Session, database_id: int, name: str, code: str, languag
     return query_function
 
 
-def get_runtimeKey(language: ExecutionLanguage):
+def get_runtimeKey(language: ExecutionLanguage, lambda_key: str):
     if language == ExecutionLanguage.PYTHON:
-        return "python3.9"
+        return "python3.9", "py", f"{lambda_key}.lambda_handler"
     elif language == ExecutionLanguage.NODEJS:
-        return "nodejs16.x"
+        return "nodejs16.x", "js", f"{lambda_key}.lambda_handler"
     elif language == ExecutionLanguage.JAVA:
-        return "java11"
+        return "java11", "java", "LambdaHandler"
     elif language == ExecutionLanguage.RUBY:
-        return "ruby2.7"
+        return "ruby2.7", "rb", f"{lambda_key}.lambda_handler"
     elif language == ExecutionLanguage.GO:
-        return "go1.x"
+        return "go1.x", "go", f"{lambda_key}.lambda_handler"
     else:
-        return ""
+        return "", "", ""

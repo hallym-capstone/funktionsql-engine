@@ -4,7 +4,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler
 import com.amazonaws.services.lambda.runtime.LambdaLogger
 
 
-public class Handler implements RequestHandler<Map<String,String>, String>{
+public class LambdaHandler implements RequestHandler<Map<String,String>, String>{
   Gson gson = new GsonBuilder().setPrettyPrinting().create();
   @Override
   public String handleRequest(Map<String,String> event, Context context)

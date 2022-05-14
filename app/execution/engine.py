@@ -34,42 +34,48 @@ class ExecutionEngine:
         )
 
     @classmethod
-    def create_lambda_executable(cls, lambda_key: str, file: bytes, runtime_key: str):
+    def create_lambda_executable(cls, lambda_key: str, file: bytes, runtime_key: str, runtime_handler: str):
         if cls.iam_client is None or cls.lambda_client is None:
             return False
 
-        role = cls.iam_client.get_role(RoleName="LambdaBasicExecution")
-        response = cls.lambda_client.create_function(
-            FunctionName=lambda_key,
-            Runtime=runtime_key,
-            Role=role["Role"]["Arn"],
-            Handler=f"{lambda_key}.lambda_handler",
-            Code=dict(ZipFile=file),
-            Timeout=300,
-        )
-        status = response["ResponseMetadata"]["HTTPStatusCode"]
-        if status >= 200 and status < 300:
-            return True
-        return False
+        try:
+            role = cls.iam_client.get_role(RoleName="LambdaBasicExecution")
+            response = cls.lambda_client.create_function(
+                FunctionName=lambda_key,
+                Runtime=runtime_key,
+                Role=role["Role"]["Arn"],
+                Handler=runtime_handler,
+                Code=dict(ZipFile=file),
+                Timeout=300,
+            )
+            status = response["ResponseMetadata"]["HTTPStatusCode"]
+            if status >= 200 and status < 300:
+                return True
+            return False
+        except Exception as err:
+            raise err
 
     @classmethod
     def run_lambda_executable(cls, lambda_key: str, parameters: dict = None):
         if cls.lambda_client is None:
             return
 
-        if parameters:
-            lambda_response = cls.lambda_client.invoke(
-                FunctionName=lambda_key,
-                InvocationType="RequestResponse",
-                LogType="Tail",
-                Payload=json.dumps(parameters),
-            )
-        else:
-            lambda_response = cls.lambda_client.invoke(
-                FunctionName=lambda_key,
-                InvocationType="RequestResponse",
-                LogType="Tail",
-            )
+        try:
+            if parameters:
+                lambda_response = cls.lambda_client.invoke(
+                    FunctionName=lambda_key,
+                    InvocationType="RequestResponse",
+                    LogType="Tail",
+                    Payload=json.dumps(parameters),
+                )
+            else:
+                lambda_response = cls.lambda_client.invoke(
+                    FunctionName=lambda_key,
+                    InvocationType="RequestResponse",
+                    LogType="Tail",
+                )
+        except Exception as err:
+            raise err
 
         if lambda_response:
             result = json.loads(lambda_response["Payload"].read().decode("utf-8"))
