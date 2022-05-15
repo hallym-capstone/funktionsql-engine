@@ -12,6 +12,15 @@ router = APIRouter()
 
 
 # TODO: add error code
+@router.post("/execute")
+async def execute_query(
+    data: ExecuteQuerySchema,
+    user_id: int = Depends(AuthModule.validate_token),
+    db: Session = Depends(get_db),
+):
+    return RuntimeEngine.consume_execute_request(data, user_id, db)
+
+
 @router.post("/databases")
 async def create_database(
     data: CreateDatabaseSchema,
@@ -36,16 +45,6 @@ async def get_database(
     db: Session = Depends(get_db),
 ):
     return QueryModule.get_database(database_id, user_id, db)
-
-
-@router.post("/databases/{database_id}/execute")
-async def execute_query(
-    database_id: int,
-    data: ExecuteQuerySchema,
-    user_id: int = Depends(AuthModule.validate_token),
-    db: Session = Depends(get_db),
-):
-    return RuntimeEngine.consume_execute_request(database_id, data, user_id, db)
 
 
 @router.post("/databases/{database_id}/functions")
